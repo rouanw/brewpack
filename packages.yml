@@ -1,0 +1,10 @@
+# This is an example packages.yml file
+
+# update: true
+# doctor: true
+# prune: true
+# analytics: true
+packages:
+  - git
+casks:
+  - atom
