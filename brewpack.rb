@@ -1,14 +1,7 @@
 #!/usr/bin/env ruby
-require 'optparse'
 require 'yaml'
 
 $filename = './packages.yml'
-
-OptionParser.new do |op|
-  op.on('-p', '--packages', 'path of your packages.yml file') do |val|
-    $filename = val
-  end
-end.parse!
 
 $defaults = { 'update' => true, 'doctor' => true, 'prune' => true, 'analytics' => true, }
 
