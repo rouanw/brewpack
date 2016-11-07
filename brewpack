@@ -2,10 +2,11 @@
 require 'yaml'
 require 'optparse'
 require 'set'
+require 'net/http'
 
 $filename = './packages.yml'
 
-$default_options = { 'update' => true, 'doctor' => true, 'prune' => true, 'analytics' => true, }
+$default_options = { 'update' => true, 'doctor' => true, 'prune' => true, 'analytics' => true }
 
 $user_packages = YAML.load_file($filename) || {}
 
@@ -31,6 +32,18 @@ def cask_install(cask, save = false)
   command "brew cask install #{cask}", "Installing cask '#{cask}'"
 end
 
+def install_formulae formulae
+  STDOUT.puts 'Installing packages with brew'
+  formulae['packages'].each do |package|
+    brew_install package
+  end
+
+  STDOUT.puts 'Installing applications with brew cask'
+  formulae['casks'].each do |cask|
+    cask_install cask
+  end
+end
+
 def install
   options = $default_options.merge($user_packages['options'])
 
@@ -52,17 +65,9 @@ def install
     command 'brew analytics off', 'Opting out of homebrew analytics'
   end
 
-  STDOUT.puts 'Installing packages with brew'
-  $user_packages['packages'].each do |package|
-    brew_install package
-  end
-
   command 'brew tap caskroom/cask', 'Setting up brew cask'
 
-  STDOUT.puts 'Installing applications with brew cask'
-  $user_packages['casks'].each do |cask|
-    cask_install cask
-  end
+  install_formulae $user_packages
 
   STDOUT.puts 'install complete'
 end
@@ -76,6 +81,9 @@ OptionParser.new do |op|
  op.on('-s', '--save', 'install one formula and add to your packages.yml file') do |val|
    $opts[:save] = true
  end
+ op.on('-r', '--repo REPO', "install formula from someone's packages.yml on GitHub") do |repo|
+   $opts[:repo] = repo
+ end
 end.parse!
 
 case ARGV[0]
@@ -83,6 +91,14 @@ when 'install', 'i'
   if ARGV[1]
     formula = ARGV[1]
     $opts[:cask] ? cask_install(formula, $opts[:save]) : brew_install(formula, $opts[:save])
+  elsif $opts[:repo]
+    uri = URI("https://raw.githubusercontent.com/#{$opts[:repo]}/master/packages.yml")
+    response = Net::HTTP.get_response(uri)
+    unless (response.code == '200')
+      STDOUT.puts 'Could not find packages.yml file. Specify in the format "user/repo" e.g. "rouanw/test-packages". The repo must contain a valid "packages.yml" file at its root.'
+      exit 1
+    end
+    install_formulae YAML.load(response.body)
   else
     install
   end
