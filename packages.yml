@@ -1,7 +1,12 @@
 ---
 packages:
-- git
 - cdargs
+- git
 casks:
 - atom
 - docker
+options:
+  update: false
+  doctor: true
+  prune: true
+  analytics: true

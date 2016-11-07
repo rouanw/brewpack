@@ -5,9 +5,9 @@ require 'set'
 
 $filename = './packages.yml'
 
-$defaults = { 'update' => true, 'doctor' => true, 'prune' => true, 'analytics' => true, }
+$default_options = { 'update' => true, 'doctor' => true, 'prune' => true, 'analytics' => true, }
 
-$user_options = YAML.load_file($filename) || {}
+$user_packages = YAML.load_file($filename) || {}
 
 def command(command, output)
   STDOUT.puts output
@@ -15,10 +15,10 @@ def command(command, output)
 end
 
 def save_formula(formula, type)
-  packages = $user_options[type] ? $user_options[type].to_set : Set.new
+  packages = $user_packages[type] ? $user_packages[type].to_set : Set.new
   packages.add formula
-  $user_options[type] = packages.to_a.sort
-  File.open($filename, 'w+') {|f| f.write($user_options.to_yaml) }
+  $user_packages[type] = packages.to_a.sort
+  File.open($filename, 'w+') {|f| f.write($user_packages.to_yaml) }
 end
 
 def brew_install(package, save = false)
@@ -32,7 +32,7 @@ def cask_install(cask, save = false)
 end
 
 def install
-  options = $defaults.merge($user_options)
+  options = $default_options.merge($user_packages['options'])
 
   STDOUT.puts 'Tidying homebrew'
 
@@ -53,14 +53,14 @@ def install
   end
 
   STDOUT.puts 'Installing packages with brew'
-  options['packages'].each do |package|
+  $user_packages['packages'].each do |package|
     brew_install package
   end
 
   command 'brew tap caskroom/cask', 'Setting up brew cask'
 
   STDOUT.puts 'Installing applications with brew cask'
-  options['casks'].each do |cask|
+  $user_packages['casks'].each do |cask|
     cask_install cask
   end
 
