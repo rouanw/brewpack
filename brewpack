@@ -1,27 +1,38 @@
 #!/usr/bin/env ruby
 require 'yaml'
 require 'optparse'
+require 'set'
 
 $filename = './packages.yml'
 
 $defaults = { 'update' => true, 'doctor' => true, 'prune' => true, 'analytics' => true, }
+
+$user_options = YAML.load_file($filename) || {}
 
 def command(command, output)
   STDOUT.puts output
   %x( #{command} )
 end
 
-def brew_install(package)
+def save_formula(formula, type)
+  packages = $user_options[type] ? $user_options[type].to_set : Set.new
+  packages.add formula
+  $user_options[type] = packages.to_a.sort
+  File.open($filename, 'w+') {|f| f.write($user_options.to_yaml) }
+end
+
+def brew_install(package, save = false)
+  save_formula package, 'packages' if save
   command "brew install #{package}", "Installing package '#{package}'"
 end
 
-def cask_install(cask)
+def cask_install(cask, save = false)
+  save_formula cask, 'casks' if save
   command "brew cask install #{cask}", "Installing cask '#{cask}'"
 end
 
 def install
-  user_options = YAML.load(File.read($filename))
-  options = $defaults.merge(user_options)
+  options = $defaults.merge($user_options)
 
   STDOUT.puts 'Tidying homebrew'
 
@@ -62,13 +73,16 @@ OptionParser.new do |op|
  op.on('-c', '--cask', 'use homebrew-cask') do |val|
    $opts[:cask] = true
  end
+ op.on('-s', '--save', 'install one formula and add to your packages.yml file') do |val|
+   $opts[:save] = true
+ end
 end.parse!
 
 case ARGV[0]
 when 'install', 'i'
   if ARGV[1]
     formula = ARGV[1]
-    $opts[:cask] ? (cask_install formula) : (brew_install formula)
+    $opts[:cask] ? cask_install(formula, $opts[:save]) : brew_install(formula, $opts[:save])
   else
     install
   end
