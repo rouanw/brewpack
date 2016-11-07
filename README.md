@@ -2,8 +2,9 @@
 
 Automate your Mac setup.
 
-## Dependencies
-Install [Homebrew](http://brew.sh/).
+- Install your favourite tools and apps on your new Mac with a single command
+
+- Join a new team and automatically install the things you need
 
 ## Installation
 
@@ -11,60 +12,53 @@ Install [Homebrew](http://brew.sh/).
 brew install rouanw/brewpack/brewpack
 ```
 
-Please note that the formula currently installs what's on master so it may be unstable.
+You'll need to have [Homebrew](http://brew.sh/) installed.
 
-## Overview
+## Usage
+
+### `brewpack install`
 
 __brewpack__ needs a `packages.yml` in the directory it's run from. Use it to specify what you'd like installed:
 
 ```yml
+---
 packages:
   - git
+  - mongodb
 casks:
   - atom
+  - docker
+  - google-chrome
 ```
 
 Run `brewpack install`.
 
 The specified `packages` will be installed using [Homebrew](http://brew.sh/) and the `casks` will be installed using [Homebrew-Cask](https://github.com/caskroom/homebrew-cask).
 
-## Usage
+### `brewpack install <package>`
 
-### Install
+Instead of directly using homebrew to install what you need, proxy the call through __brewpack__ so it gets saved to your `packages.yml` file.
 
-Install formulae listed in `packages.yml`:
+#### Examples:
 
-`brewpack install`
-
-
-#### Installing a single package
-
-Install a package from homebrew core:
-
-`brewpack install <package>`
-
-e.g. `brewpack install git`
-
-Install a core homebrew package and save it to `packages.yml`:
+Install a core homebrew package and save it to your `packages.yml`:
 
 `brewpack install --save git`
 
-Install a cask (usually an app) from [hombrew-cask](https://github.com/caskroom/homebrew-cask):
+Install a cask (usually an app) from [hombrew-cask](https://github.com/caskroom/homebrew-cask) and save it to your `packages.yml`:
 
-`brewpack install --cask <cask>`
+`brewpack install --cask --save google-chrome`
 
-e.g. `brewpack install --cask google-chrome`
-
-Install a package from hombrew-cask and save it to `packages.yml`:
-
-`brewpack install --save --cask google-chrome`
-
-#### Sharing brewpacks
+### `brewpack install --repo <github-repo>`
 
 Install a formulae from a `packages.yml` hosted on GitHub:
 
-`brewpack install --repo <github_repo>`
+`brewpack install --repo rouanw/my-packages`
 
-e.g. `brewpack install --repo rouanw/test-packages`
+Where `rouanw` is the GitHub user and `my-packages` is the name of the repo. It needs to have a `packages.yml` at its root.
 
-This can be handy for sharing a team setup.
+If you regularly push your personal packages repo to GitHub, this is an easy way to get yourself set up on a new Mac.
+
+This can also be really handy for sharing a team setup. Imagine you join the Platform team at FunCorp:
+
+`brewpack install --repo funcorp/platform`
