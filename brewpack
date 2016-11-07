@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'yaml'
+require 'optparse'
 
 $filename = './packages.yml'
 
@@ -8,6 +9,14 @@ $defaults = { 'update' => true, 'doctor' => true, 'prune' => true, 'analytics' =
 def command(command, output)
   STDOUT.puts output
   %x( #{command} )
+end
+
+def brew_install(package)
+  command "brew install #{package}", "Installing package '#{package}'"
+end
+
+def cask_install(cask)
+  command "brew cask install #{cask}", "Installing cask '#{cask}'"
 end
 
 def install
@@ -34,22 +43,35 @@ def install
 
   STDOUT.puts 'Installing packages with brew'
   options['packages'].each do |package|
-    command "brew install #{package}", "Installing package '#{package}'"
+    brew_install package
   end
 
   command 'brew tap caskroom/cask', 'Setting up brew cask'
 
   STDOUT.puts 'Installing applications with brew cask'
   options['casks'].each do |cask|
-    command "brew cask install #{cask}", "Installing application '#{cask}'"
+    cask_install cask
   end
 
   STDOUT.puts 'install complete'
 end
 
+$opts = {}
+
+OptionParser.new do |op|
+ op.on('-c', '--cask', 'use homebrew-cask') do |val|
+   $opts[:cask] = true
+ end
+end.parse!
+
 case ARGV[0]
 when 'install', 'i'
-  install
+  if ARGV[1]
+    formula = ARGV[1]
+    $opts[:cask] ? (cask_install formula) : (brew_install formula)
+  else
+    install
+  end
 else
   STDOUT.puts <<-EOF
 Unsupported or no command provided.
