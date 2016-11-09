@@ -6,7 +6,7 @@ require 'net/http'
 
 $filename = './packages.yml'
 
-$default_options = { 'update' => true, 'doctor' => true, 'prune' => true, 'analytics' => true }
+$default_options = { 'update' => false, 'doctor' => true, 'prune' => true, 'analytics' => true }
 
 $user_packages = YAML.load_file($filename) || {}
 
