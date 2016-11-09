@@ -10,10 +10,12 @@ $default_options = { 'update' => false, 'doctor' => true, 'prune' => true, 'anal
 
 $user_packages = (YAML.load_file($filename) rescue {}) || {}
 
-def command(command, output)
-  STDOUT.puts output
+def command(command, output = nil)
+  STDOUT.puts output if output
   %x( #{command} )
 end
+
+command 'brew tap caskroom/cask'
 
 def write_to_file(hash)
   File.open($filename, 'w+') {|f| f.write(hash.to_yaml) }
@@ -68,8 +70,6 @@ def install
   unless options['analytics']
     command 'brew analytics off', 'Opting out of homebrew analytics'
   end
-
-  command 'brew tap caskroom/cask', 'Setting up brew cask'
 
   install_formulae $user_packages
 
