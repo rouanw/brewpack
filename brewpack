@@ -45,7 +45,7 @@ def install_formulae formulae
 end
 
 def install
-  options = $default_options.merge($user_packages['options'])
+  options = $user_packages['options'] ? $default_options.merge($user_packages['options']) : $default_options
 
   STDOUT.puts 'Tidying homebrew'
 
