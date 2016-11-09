@@ -26,6 +26,9 @@ brewpack init
 brewpack install --save git
 brewpack install --save --cask google-chrome
 
+# joined a new team? get the stuff you need
+brewpack install --repo example-company/funteam
+
 # got a new Mac? get all your stuff back.
 brewpack install
 ```
