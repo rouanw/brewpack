@@ -8,18 +8,22 @@ $filename = './packages.yml'
 
 $default_options = { 'update' => false, 'doctor' => true, 'prune' => true, 'analytics' => true }
 
-$user_packages = YAML.load_file($filename) || {}
+$user_packages = (YAML.load_file($filename) rescue {}) || {}
 
 def command(command, output)
   STDOUT.puts output
   %x( #{command} )
 end
 
+def write_to_file(hash)
+  File.open($filename, 'w+') {|f| f.write(hash.to_yaml) }
+end
+
 def save_formula(formula, type)
   packages = $user_packages[type] ? $user_packages[type].to_set : Set.new
   packages.add formula
   $user_packages[type] = packages.to_a.sort
-  File.open($filename, 'w+') {|f| f.write($user_packages.to_yaml) }
+  write_to_file $user_packages
 end
 
 def brew_install(package, save = false)
@@ -102,6 +106,15 @@ when 'install', 'i'
   else
     install
   end
+when 'init'
+  if File.file?($filename)
+    STDOUT.puts 'packages.yml already exists'
+    exit 1
+  end
+  packages = command('brew leaves', 'Finding installed packages').split("\n")
+  casks = command('brew cask list -1', 'Finding installed casks').split("\n")
+  write_to_file({ 'packages' => packages, 'casks' => casks })
+  STDOUT.puts 'packages.yml created'
 else
   STDOUT.puts <<-EOF
 Unsupported or no command provided.
