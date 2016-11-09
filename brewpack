@@ -121,5 +121,6 @@ Unsupported or no command provided.
 
 Available commands:
 - brewpack install
+- brewpack init
 EOF
 end
